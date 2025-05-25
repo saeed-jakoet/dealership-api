@@ -1,9 +1,10 @@
 import {Hono} from "hono";
 import {
-    newVehicleController,
     getAllVehiclesController,
     getVehicleByIdController,
-    updateVehicleDetails
+    newVehicleController,
+    updateVehicleDetails,
+    vehicleVisibility
 } from "../controllers/vehicles";
 
 const vehicleRoutes = new Hono();
@@ -14,6 +15,8 @@ vehicleRoutes.get("/all", getAllVehiclesController);
 
 vehicleRoutes.get("/:id", getVehicleByIdController);
 
-vehicleRoutes.put('/edit/:id', updateVehicleDetails)
+vehicleRoutes.put('/edit/:id', updateVehicleDetails);
+
+vehicleRoutes.put('/visible/:id', vehicleVisibility);
 
 export default vehicleRoutes;

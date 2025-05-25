@@ -1,6 +1,12 @@
-import { successResponse, errorResponse } from "../utils/response";
-import { addNewVehicle, fetchAllVehicles, fetchVehicleById, updateVehicleById } from "../queries/vehicles";
-import { uploadImages } from "../helpers/uploader";
+import {errorResponse, successResponse} from "../utils/response";
+import {
+    addNewVehicle,
+    fetchAllVehicles,
+    fetchVehicleById,
+    showVehicleInApp,
+    updateVehicleById
+} from "../queries/vehicles";
+import {uploadImages} from "../helpers/uploader";
 
 
 export const newVehicleController = async (c: any) => {
@@ -45,7 +51,7 @@ export const getAllVehiclesController = async () => {
 
 export const getVehicleByIdController = async (c: any) => {
     try {
-        const { id } = c.req.param();
+        const {id} = c.req.param();
 
         const vehicle = await fetchVehicleById(id);
         if (!vehicle) return errorResponse("Vehicle not found", 404);
@@ -59,7 +65,7 @@ export const getVehicleByIdController = async (c: any) => {
 
 export const updateVehicleDetails = async (c: any) => {
     try {
-        const { id } = c.req.param();
+        const {id} = c.req.param();
         const body = await c.req.json();
 
         if (typeof body.vehicleDetails === "string") body.vehicleDetails = JSON.parse(body.vehicleDetails);
@@ -72,4 +78,18 @@ export const updateVehicleDetails = async (c: any) => {
         return errorResponse("Failed to update vehicle", 500);
     }
 };
+
+export const vehicleVisibility = async (c: any) => {
+    try {
+        const {id} = c.req.param()
+        const body = await c.req.json();
+
+        const updatedVisibility = await showVehicleInApp(id, body);
+
+        return successResponse(updatedVisibility, "Vehicle visibility successfully updated");
+    } catch (error) {
+        console.error("Error updating vehicle:", error);
+        return errorResponse("Failed to update vehicle", 500);
+    }
+}
 

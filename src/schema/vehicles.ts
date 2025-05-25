@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const vehicleSchema = new mongoose.Schema({
     name: String,
     used: Boolean,
+    visible: Boolean,
     mileage: String,
     transmissionType: String,
     price: String,
@@ -20,6 +21,6 @@ const vehicleSchema = new mongoose.Schema({
         bodyType: String,
         warranty: String,
     },
-}, { timestamps: true });
+}, {timestamps: true});
 
 export const Vehicle = mongoose.models.Vehicle || mongoose.model('Vehicle', vehicleSchema);

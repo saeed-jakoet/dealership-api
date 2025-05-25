@@ -22,6 +22,7 @@ export const addNewVehicle = async (data: {
         bodyType: string;
         warranty: string;
     };
+    visible: boolean;
 }) => {
     try {
         // Ensure DB connection is established
@@ -110,3 +111,23 @@ export const updateVehicleById = async (
         throw error;
     }
 };
+
+export const showVehicleInApp = async (id: string, data: {
+    visible: boolean
+}) => {
+    try {
+        await connectToDatabase();
+
+        const showVehicle = await Vehicle.findByIdAndUpdate(id, data, {
+            new: true,
+            runValidators: true
+        });
+
+        if (!showVehicle) throw new Error('Vehicle not found');
+
+        return showVehicle;
+    } catch (error) {
+        console.error('Error updating vehicle visibility:', error);
+        throw error;
+    }
+}
