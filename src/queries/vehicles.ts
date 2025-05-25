@@ -54,3 +54,17 @@ export const fetchAllVehicles = async () => {
         throw error;
     }
 };
+
+export const fetchVehicleById = async (id: string) => {
+    try {
+        await connectToDatabase();
+
+        const vehicle = await Vehicle.findById(id);
+        if (!vehicle) throw new Error('Vehicle not found');
+
+        return vehicle;
+    } catch (error) {
+        console.error('Error fetching vehicle by ID:', error);
+        throw error;
+    }
+}

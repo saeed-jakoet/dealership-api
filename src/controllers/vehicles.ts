@@ -1,5 +1,5 @@
 import { successResponse, errorResponse } from "../utils/response";
-import { addNewVehicle, fetchAllVehicles } from "../queries/vehicles";
+import { addNewVehicle, fetchAllVehicles, fetchVehicleById } from "../queries/vehicles";
 import { uploadImages } from "../helpers/uploader";
 
 
@@ -46,6 +46,20 @@ export const getAllVehiclesController = async () => {
     } catch (error) {
         console.error("Error fetching vehicles:", error);
         return errorResponse("Failed to fetch vehicles", 500);
+    }
+}
+
+export const getVehicleByIdController = async (c: any) => {
+    try {
+        const { id } = c.req.param();
+
+        const vehicle = await fetchVehicleById(id);
+        if (!vehicle) return errorResponse("Vehicle not found", 404);
+
+        return successResponse(vehicle, "Vehicle fetched successfully");
+    } catch (error) {
+        console.error("Error fetching vehicle by ID:", error);
+        return errorResponse("Failed to fetch vehicle", 500);
     }
 }
 
