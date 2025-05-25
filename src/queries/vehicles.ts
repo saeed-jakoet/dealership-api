@@ -68,3 +68,45 @@ export const fetchVehicleById = async (id: string) => {
         throw error;
     }
 }
+
+export const updateVehicleById = async (
+    id: string,
+    data: {
+        name: string;
+        used: boolean;
+        mileage: string;
+        transmissionType: string;
+        price: string;
+        fuelType: string;
+        year: string;
+        brand: string;
+        imageUrl: string;
+        imageUrls: string[];
+        extras: string[];
+        sellerComments: string;
+        vehicleDetails: {
+            previousOwners: number;
+            serviceHistory: string;
+            colour: string;
+            bodyType: string;
+            warranty: string;
+        };
+    }
+) => {
+    try {
+        await connectToDatabase();
+
+        const updatedVehicle = await Vehicle.findByIdAndUpdate(
+            id,
+            data,
+            { new: true, runValidators: true }
+        );
+
+        if (!updatedVehicle) throw new Error('Vehicle not found');
+
+        return updatedVehicle;
+    } catch (error) {
+        console.error('Error updating vehicle:', error);
+        throw error;
+    }
+};
