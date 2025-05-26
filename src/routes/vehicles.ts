@@ -6,12 +6,13 @@ import {
     updateVehicleDetails,
     vehicleVisibility
 } from "../controllers/vehicles";
+import {jwtMiddleware} from "../middleware/authenticateToken";
 
 const vehicleRoutes = new Hono();
 
 vehicleRoutes.post("/new", newVehicleController);
 
-vehicleRoutes.get("/all", getAllVehiclesController);
+vehicleRoutes.get("/all", jwtMiddleware, getAllVehiclesController);
 
 vehicleRoutes.get("/:id", getVehicleByIdController);
 
