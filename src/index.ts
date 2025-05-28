@@ -5,6 +5,7 @@ import {cors} from 'hono/cors'
 import userRoutes from "./routes/auth";
 import vehicleRoutes from "./routes/vehicles";
 import reviewRoutes from "./routes/reviews";
+import inboxRoutes from "./routes/inbox";
 
 const app = new Hono();
 
@@ -76,6 +77,7 @@ app.get('/', (c) => {
 app.route("/auth", userRoutes);
 app.route("/vehicles", vehicleRoutes);
 app.route('/reviews', reviewRoutes);
+app.route("/inbox", inboxRoutes);
 
 
 // Set the port (default to 4000 if not specified)

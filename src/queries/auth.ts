@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcryptjs';
 import connectToDatabase from '../utils/mongoose';
-import { User } from '../schema/auth';
+import {User} from '../schema/auth';
 
 
 export const createUser = async (data: { email: string; role?: string; password: string }) => {
@@ -11,7 +11,7 @@ export const createUser = async (data: { email: string; role?: string; password:
         // Create a new user document
         const newUser = new User(data);
 
-        // Save the document to the database
+        // Save the document to the databa  se
         const savedUser = await newUser.save();
 
         return savedUser;
@@ -25,7 +25,7 @@ export const loginUserQuery = async (email: string, password: string) => {
     try {
         await connectToDatabase();
 
-        const user = await User.findOne({ email });
+        const user = await User.findOne({email});
 
         if (!user) {
             throw new Error("Invalid email or password");
