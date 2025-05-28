@@ -47,7 +47,7 @@ export const readInboxMessage = async (id: string, data: {
 
         return readMessage;
     } catch (error) {
-        console.error('Error updating vehicle visibility:', error);
+        console.error('Error updating Inbox Status:', error);
         throw error;
     }
 }
