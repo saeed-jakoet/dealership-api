@@ -31,3 +31,23 @@ export const getInboxQuery = async () => {
         throw error;
     }
 };
+
+export const readInboxMessage = async (id: string, data: {
+    status: boolean
+}) => {
+    try {
+        await connectToDatabase();
+
+        const readMessage = await Inbox.findByIdAndUpdate(id, data, {
+            new: true,
+            runValidators: true
+        });
+
+        if (!readMessage) throw new Error('Message not found');
+
+        return readMessage;
+    } catch (error) {
+        console.error('Error updating vehicle visibility:', error);
+        throw error;
+    }
+}
