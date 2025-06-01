@@ -10,14 +10,14 @@ import {jwtMiddleware} from "../middleware/authenticateToken";
 
 const vehicleRoutes = new Hono();
 
-vehicleRoutes.post("/new", newVehicleController);
+vehicleRoutes.post("/new", jwtMiddleware, newVehicleController);
 
 vehicleRoutes.get("/all", jwtMiddleware, getAllVehiclesController);
 
-vehicleRoutes.get("/:id", getVehicleByIdController);
+vehicleRoutes.get("/:id", jwtMiddleware, getVehicleByIdController);
 
-vehicleRoutes.put('/edit/:id', updateVehicleDetails);
+vehicleRoutes.put('/edit/:id', jwtMiddleware, updateVehicleDetails);
 
-vehicleRoutes.put('/visible/:id', vehicleVisibility);
+vehicleRoutes.put('/visible/:id', jwtMiddleware, vehicleVisibility);
 
 export default vehicleRoutes;
