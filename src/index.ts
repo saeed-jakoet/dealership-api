@@ -22,24 +22,24 @@ app.options('*', (c) => {
 });
 
 
-app.get("/health", (c) => c.text("OK"));
-app.get('/', (c) => {
-    return c.text('\n' +
-        '     _                         _\n' +
-        '    |_|                       |_|\n' +
-        '    | |         /^^^\\         | |\n' +
-        '   _| |_      (| "o" |)      _| |_\n' +
-        ' _| | | | _    (_---_)    _ | | | |_ \n' +
-        '| | | | |\' |    _| |_    | `| | | | |\n' +
-        '\\          /   /     \\   \\          /\n' +
-        ' \\        /  / /(. .)\\ \\  \\        /\n' +
-        '   \\    /  / /  | . |  \\ \\  \\    /\n' +
-        '     \\  \\/ /   ||Y||    \\ \\/  /\n' +
-        '       \\_/      || ||      \\_/\n' +
-        '                () ()\n' +
-        '                || ||\n' +
-        '               ooO Ooo\n');
-});
+// app.get("/health", (c) => c.text("OK"));
+// app.get('/', (c) => {
+//     return c.text('\n' +
+//         '     _                         _\n' +
+//         '    |_|                       |_|\n' +
+//         '    | |         /^^^\\         | |\n' +
+//         '   _| |_      (| "o" |)      _| |_\n' +
+//         ' _| | | | _    (_---_)    _ | | | |_ \n' +
+//         '| | | | |\' |    _| |_    | `| | | | |\n' +
+//         '\\          /   /     \\   \\          /\n' +
+//         ' \\        /  / /(. .)\\ \\  \\        /\n' +
+//         '   \\    /  / /  | . |  \\ \\  \\    /\n' +
+//         '     \\  \\/ /   ||Y||    \\ \\/  /\n' +
+//         '       \\_/      || ||      \\_/\n' +
+//         '                () ()\n' +
+//         '                || ||\n' +
+//         '               ooO Ooo\n');
+// });
 
 app.route("/auth", userRoutes);
 app.route("/vehicles", vehicleRoutes);
@@ -47,13 +47,13 @@ app.route('/reviews', reviewRoutes);
 app.route("/inbox", inboxRoutes);
 
 
-// Set the port (default to 4000 if not specified)
-const PORT = process.env.PORT;
-
-Bun.serve({
-    fetch: app.fetch,
-    port: PORT,
-    hostname: "0.0.0.0",
-});
+// // Set the port (default to 4000 if not specified)
+// const PORT = process.env.PORT;
+//
+// Bun.serve({
+//     fetch: app.fetch,
+//     port: PORT,
+//     hostname: "0.0.0.0",
+// });
 
 console.log(`🚀 Hono car dealership is running on http://localhost:${PORT}`);
