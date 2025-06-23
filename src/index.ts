@@ -10,33 +10,15 @@ const app = new Hono();
 
 app.use(logger())
 
-const allowedOrigins = [
-    'http://localhost:3000',
-    'https://car-dealership-cms-rr67.vercel.app',
-];
-
-app.use('*', async (ctx, next) => {
-    const origin = ctx.req.headers.get('Origin');
-
-    // Check if origin is allowed
+app.options('*', (c) => {
+    const origin = c.req.header('Origin');
     if (origin && allowedOrigins.includes(origin)) {
-        ctx.res.headers.set('Access-Control-Allow-Origin', origin);
-    } else {
-        // Optionally, reject unauthorized origins
-        // return ctx.text('CORS origin denied', 403);
-        // Or just skip CORS headers
+        c.header('Access-Control-Allow-Origin', origin);
     }
-
-    ctx.res.headers.set('Access-Control-Allow-Credentials', 'true');
-    ctx.res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    ctx.res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-
-    // Preflight OPTIONS request handler
-    if (ctx.req.method === 'OPTIONS') {
-        return ctx.text('OK', 200);
-    }
-
-    await next();
+    c.header('Access-Control-Allow-Credentials', 'true');
+    c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    return c.text('', 204);
 });
 
 
