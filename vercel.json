@@ -1,0 +1,12 @@
+{
+  "build": {
+    "env": {
+      "BUN_RUNTIME": "true"
+    }
+  },
+  "functions": {
+    "api/**/*.ts": {
+      "runtime": "bun@latest"
+    }
+  }
+}
