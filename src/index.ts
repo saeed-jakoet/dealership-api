@@ -1,6 +1,5 @@
 import {Hono} from 'hono';
 import {logger} from 'hono/logger'
-import {cors} from 'hono/cors'
 
 import userRoutes from "./routes/auth";
 import vehicleRoutes from "./routes/vehicles";
@@ -10,20 +9,20 @@ import inboxRoutes from "./routes/inbox";
 const app = new Hono();
 
 app.use(logger())
-app.use('*', cors({
-    origin: [
-        'http://localhost:3000',
-        'https://car-dealership-cms-rr67.vercel.app'
-    ],
-    credentials: true,
-    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
-}))
+app.use('*', async (ctx, next) => {
+    const origin = ctx.req.headers.get('Origin') || '*';
 
-app.use("*", async (c, next) => {
-    c.header("Access-Control-Allow-Credentials", "true");
-    c.header('Access-Control-Allow-Origin', 'https://car-dealership-cms-rr67.vercel.app');
-    c.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-    c.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    // Set CORS headers on every response
+    ctx.headers.set('Access-Control-Allow-Origin', origin);
+    ctx.headers.set('Access-Control-Allow-Credentials', 'true');
+    ctx.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    ctx.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    // Handle preflight OPTIONS request
+    if (ctx.req.method === 'OPTIONS') {
+        return ctx.text('OK', 200);
+    }
+
     await next();
 });
 
