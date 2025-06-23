@@ -9,16 +9,29 @@ import inboxRoutes from "./routes/inbox";
 const app = new Hono();
 
 app.use(logger())
+
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://car-dealership-cms-rr67.vercel.app',
+];
+
 app.use('*', async (ctx, next) => {
-    const origin = ctx.req.headers.get('Origin') || '*';
+    const origin = ctx.req.headers.get('Origin');
 
-    // Set CORS headers on every response
-    ctx.headers.set('Access-Control-Allow-Origin', origin);
-    ctx.headers.set('Access-Control-Allow-Credentials', 'true');
-    ctx.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    ctx.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    // Check if origin is allowed
+    if (origin && allowedOrigins.includes(origin)) {
+        ctx.res.headers.set('Access-Control-Allow-Origin', origin);
+    } else {
+        // Optionally, reject unauthorized origins
+        // return ctx.text('CORS origin denied', 403);
+        // Or just skip CORS headers
+    }
 
-    // Handle preflight OPTIONS request
+    ctx.res.headers.set('Access-Control-Allow-Credentials', 'true');
+    ctx.res.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    ctx.res.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
+    // Preflight OPTIONS request handler
     if (ctx.req.method === 'OPTIONS') {
         return ctx.text('OK', 200);
     }
@@ -26,28 +39,6 @@ app.use('*', async (ctx, next) => {
     await next();
 });
 
-
-// app.use('*', async (c, next) => {
-//   console.log('Request:', c.req.url);
-//   await next();
-// });
-//
-// app.use('*', async (c, next) => {
-//   const cookie = getCookie(c); // ✅ Parses all cookies
-//   console.log('Cookie:', cookie);
-//
-//   const accessToken = cookie.accessToken;
-//   const refreshToken = cookie.refreshToken;
-//   (c as any).accessToken = accessToken;
-//   (c as any).refreshToken = refreshToken
-//
-//   console.log('Access Token:', accessToken);
-//   console.log('Refresh Token:', refreshToken);
-//
-//   await next();
-// });
-
-// app.use('*', jwtMiddleware) //authenticate all routes
 
 app.get("/health", (c) => c.text("OK"));
 app.get('/', (c) => {
