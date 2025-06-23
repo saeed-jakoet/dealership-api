@@ -9,17 +9,25 @@ import {
 import {uploadImages} from "../helpers/uploader";
 
 
+async function blobToBuffer(blob: Blob): Promise<Buffer> {
+    const arrayBuffer = await blob.arrayBuffer();
+    return Buffer.from(arrayBuffer);
+}
+
 export const newVehicleController = async (c: any) => {
     try {
         const formData = await c.req.formData();
-        const files = formData.getAll("file").filter((f: unknown) => typeof f !== "string") as Blob[];
-        const folder = formData.get("folder") as string || "default-folder";
+        const folder = (formData.get("folder") as string) || "default-folder";
 
-        const imageUrls = await uploadImages(files, folder);
+        const blobs = formData.getAll("file").filter((f: unknown) => typeof f !== "string") as Blob[];
 
+        const buffers = await Promise.all(blobs.map(blobToBuffer));
+
+        const imageUrls = await uploadImages(buffers, folder);
         const data = Object.fromEntries(
-            (Array.from(formData.entries()) as [string, any][])
-                .filter(([key]) => key !== "file" && key !== "folder")
+            (Array.from(formData.entries()) as [string, any][]).filter(
+                ([key]) => key !== "file" && key !== "folder"
+            )
         );
 
         if (typeof data.vehicleDetails === "string") data.vehicleDetails = JSON.parse(data.vehicleDetails);

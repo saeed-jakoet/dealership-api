@@ -1,7 +1,7 @@
 {
   "name": "dealership-api",
   "scripts": {
-    "dev": "bun run api/index.ts"
+    "dev": "bun run --hot src/index.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

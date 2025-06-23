@@ -1,23 +1,17 @@
-import formidable from "formidable";
-import  cloudinary  from "../utils/cloudinary";
-import { Buffer } from "buffer";
+import cloudinary from "../utils/cloudinary";
+import {Buffer} from "buffer";
 
-export const uploadImages = async (files: Blob[], folder: string) => {
+export const uploadImages = async (files: Buffer[], folder: string) => {
     const imageUrls: string[] = [];
-    for (const file of files) {
-        const arrayBuffer = await file.arrayBuffer();
-        const fileBuffer = Buffer.from(arrayBuffer);
-        const imageUrl = await new Promise<string>((resolve, reject) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-                { resource_type: "auto", folder },
-                (error, result) => {
-                    if (error) return reject(error);
-                    resolve(result.secure_url);
-                }
-            );
-            uploadStream.end(fileBuffer);
+    for (const fileBuffer of files) {
+        const base64Str = fileBuffer.toString('base64');
+        const dataUri = `data:image/jpeg;base64,${base64Str}`;
+
+        const result = await cloudinary.uploader.upload(dataUri, {
+            resource_type: "auto",
+            folder,
         });
-        imageUrls.push(imageUrl);
+        imageUrls.push(result.secure_url);
     }
     return imageUrls;
 };
