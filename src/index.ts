@@ -21,7 +21,7 @@ app.use('*', cors({
 
 app.use("*", async (c, next) => {
     c.header("Access-Control-Allow-Credentials", "true");
-    // c.header("Access-Control-Allow-Origin", "https://your-production"); // ✅ Adjust
+    c.header('Access-Control-Allow-Origin', 'https://car-dealership-cms-rr67.vercel.app');
     c.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     c.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     await next();
