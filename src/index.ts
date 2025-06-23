@@ -13,7 +13,7 @@ app.use(logger())
 app.use('*', cors({
     origin: [
         'http://localhost:3000',
-        'https://your-production-site.com'
+        'https://car-dealership-cms-rr67.vercel.app'
     ],
     credentials: true,
     allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
