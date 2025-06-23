@@ -10,23 +10,18 @@ import inboxRoutes from "./routes/inbox";
 const app = new Hono();
 
 app.use(logger())
-app.use('/*', cors({
+app.use('*', cors({
     origin: [
-        'https://nimbble.co.za',
-        'https://www.nimbble.co.za',
-        'https://nimbble-bun-web.vercel.app',
-        'https://nimbble-web.vercel.app',
         'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:3002',
-        'http://localhost:3003',
+        'https://your-production-site.com'
     ],
     credentials: true,
+    allowMethods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }))
 
 app.use("*", async (c, next) => {
     c.header("Access-Control-Allow-Credentials", "true");
-    // c.header("Access-Control-Allow-Origin", "https://nimbble-web.vercel.app"); // ✅ Adjust
+    // c.header("Access-Control-Allow-Origin", "https://your-production"); // ✅ Adjust
     c.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     c.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
     await next();
