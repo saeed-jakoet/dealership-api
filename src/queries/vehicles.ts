@@ -1,5 +1,5 @@
 import connectToDatabase from '../utils/mongoose';
-import { Vehicle} from "../schema/vehicles";
+import {Vehicle} from "../schema/vehicles";
 
 
 export const addNewVehicle = async (data: {
@@ -70,6 +70,19 @@ export const fetchVehicleById = async (id: string) => {
     }
 }
 
+export const deleteVehicleById = async (id: string) => {
+    try {
+        await connectToDatabase();
+        const vehicle = await Vehicle.findByIdAndDelete(id);
+        if (!vehicle) throw new Error('Vehicle not found');
+
+        return vehicle;
+    } catch (error) {
+        console.error('Error deleting vehicle by ID:', error);
+        throw error;
+    }
+}
+
 export const updateVehicleById = async (
     id: string,
     data: {
@@ -100,7 +113,7 @@ export const updateVehicleById = async (
         const updatedVehicle = await Vehicle.findByIdAndUpdate(
             id,
             data,
-            { new: true, runValidators: true }
+            {new: true, runValidators: true}
         );
 
         if (!updatedVehicle) throw new Error('Vehicle not found');
@@ -131,3 +144,28 @@ export const showVehicleInApp = async (id: string, data: {
         throw error;
     }
 }
+
+export const updateVehicleImageOrder = async (
+    id: string,
+    reorderedImageUrls: string[]
+) => {
+    try {
+        await connectToDatabase();
+
+        const updatedVehicle = await Vehicle.findByIdAndUpdate(
+            id,
+            {
+                imageUrls: reorderedImageUrls,
+                imageUrl: reorderedImageUrls[0] || "",
+            },
+            {new: true, runValidators: true}
+        );
+
+        if (!updatedVehicle) throw new Error("Vehicle not found");
+
+        return updatedVehicle;
+    } catch (error) {
+        console.error("Error updating image order:", error);
+        throw error;
+    }
+};

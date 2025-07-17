@@ -1,10 +1,12 @@
 import {errorResponse, successResponse} from "../utils/response";
 import {
     addNewVehicle,
+    deleteVehicleById,
     fetchAllVehicles,
     fetchVehicleById,
     showVehicleInApp,
-    updateVehicleById
+    updateVehicleById,
+    updateVehicleImageOrder
 } from "../queries/vehicles";
 import {uploadImages} from "../helpers/uploader";
 
@@ -84,6 +86,38 @@ export const updateVehicleDetails = async (c: any) => {
     } catch (error) {
         console.error("Error updating vehicle:", error);
         return errorResponse("Failed to update vehicle", 500);
+    }
+};
+
+export const deleteVehicle = async (c: any) => {
+    try {
+        const {id} = c.req.param();
+
+        await deleteVehicleById(id);
+
+        return successResponse("Vehicle deleted successfully");
+    } catch (error) {
+        console.error("Error deleting vehicle", error);
+        return errorResponse("Failed to delete vehicle", 500);
+    }
+}
+
+export const shuffleImages = async (c: any) => {
+    try {
+        const {id} = c.req.param();
+        const body = await c.req.json();
+        const {imageUrls} = body;
+
+        if (!Array.isArray(imageUrls) || imageUrls.some((url) => typeof url !== "string")) {
+            return c.json({message: "Invalid or missing imageUrls"}, 400);
+        }
+
+        const updatedVehicle = await updateVehicleImageOrder(id, imageUrls);
+
+        return c.json(updatedVehicle, 200);
+    } catch (error) {
+        console.error("Error in shuffleImages:", error);
+        return c.json({message: "Failed to reorder images"}, 500);
     }
 };
 

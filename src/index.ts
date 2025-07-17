@@ -30,7 +30,6 @@ app.use(
 
 app.use('*', async (c, next) => {
     c.header('Access-Control-Allow-Credentials', 'true');
-    // c.header('Access-Control-Allow-Origin', 'https://nimbble-web.vercel.app'); // optionally hardcode origin here if needed
     c.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     c.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
     await next();
