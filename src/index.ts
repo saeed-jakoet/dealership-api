@@ -16,6 +16,7 @@ app.use(
     cors({
         origin: [
             'https://car-dealership-cms-rr67.vercel.app',
+            'https://car-dealership-cms.vercel.app',
             'http://localhost:3000',
             'http://localhost:3001',
             'http://localhost:3002',
