@@ -24,7 +24,7 @@ vehicleRoutes.put('/edit/:id', jwtMiddleware, updateVehicleDetails);
 
 vehicleRoutes.put('/images/:id', jwtMiddleware, updateVehicleImages);
 
-vehicleRoutes.delete('/images/:id', clearVehicleImages);
+vehicleRoutes.delete('/images/:id', jwtMiddleware, clearVehicleImages);
 
 vehicleRoutes.put('/visible/:id', jwtMiddleware, vehicleVisibility);
 
