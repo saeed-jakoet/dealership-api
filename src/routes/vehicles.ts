@@ -1,5 +1,6 @@
 import {Hono} from "hono";
 import {
+    clearVehicleImages,
     deleteVehicle,
     getAllVehiclesController,
     getVehicleByIdController,
@@ -22,6 +23,8 @@ vehicleRoutes.get("/:id", getVehicleByIdController);
 vehicleRoutes.put('/edit/:id', jwtMiddleware, updateVehicleDetails);
 
 vehicleRoutes.put('/images/:id', jwtMiddleware, updateVehicleImages);
+
+vehicleRoutes.delete('/images/:id', clearVehicleImages);
 
 vehicleRoutes.put('/visible/:id', jwtMiddleware, vehicleVisibility);
 

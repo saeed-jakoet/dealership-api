@@ -212,10 +212,12 @@ export const updateVehicleImages = async (c: any) => {
     try {
         const { id } = c.req.param();
         const formData = await c.req.formData();
-        const folder = (formData.get("folder") as string) || "vehicles";
 
         const existingVehicle = await fetchVehicleById(id);
         if (!existingVehicle) return errorResponse("Vehicle not found", 404);
+
+        // Use the vehicle's name as the folder, fallback to "vehicles" if no name
+        const folder = existingVehicle.name || "vehicles";
 
         const blobs = formData.getAll("file").filter((f: unknown) => typeof f !== "string") as Blob[];
         
@@ -224,23 +226,17 @@ export const updateVehicleImages = async (c: any) => {
         }
 
         const buffers = await Promise.all(blobs.map(blobToBuffer));
-        const { imagePublicIds } = await uploadImages(buffers, folder, id);
+        const { imagePublicIds: newImagePublicIds } = await uploadImages(buffers, folder, id);
 
-        const oldPublicIds = existingVehicle.imagePublicIds || [];
+        // Append new images to existing ones instead of replacing
+        const existingPublicIds = existingVehicle.imagePublicIds || [];
+        const combinedPublicIds = [...existingPublicIds, ...newImagePublicIds];
 
         const updateData = {
-            imagePublicIds: imagePublicIds
+            imagePublicIds: combinedPublicIds
         };
 
         const updatedVehicle = await updateVehicleById(id, updateData);
-
-        if (oldPublicIds.length > 0) {
-            try {
-                await deleteImagesFromCloudinary(oldPublicIds);
-            } catch (cloudinaryError) {
-                console.error("Warning: Failed to delete old images from Cloudinary:", cloudinaryError);
-            }
-        }
 
         const vehicleObj = updatedVehicle.toObject();
         const imageUrls = generateImageUrls(vehicleObj.imagePublicIds || []);
@@ -251,9 +247,38 @@ export const updateVehicleImages = async (c: any) => {
             allImageUrls: imageUrls
         };
 
-        return successResponse(responseData, "Vehicle images updated successfully");
+        return successResponse(responseData, "Vehicle images added successfully");
     } catch (error) {
-        console.error("Error updating vehicle images:", error);
-        return errorResponse("Failed to update vehicle images", 500);
+        console.error("Error adding vehicle images:", error);
+        return errorResponse("Failed to add vehicle images", 500);
+    }
+};
+
+export const clearVehicleImages = async (c: any) => {
+    try {
+        const { id } = c.req.param();
+
+        const existingVehicle = await fetchVehicleById(id);
+        if (!existingVehicle) return errorResponse("Vehicle not found", 404);
+
+        // Clear all image references from the database
+        const updateData = {
+            imagePublicIds: []
+        };
+
+        const updatedVehicle = await updateVehicleById(id, updateData);
+
+        const vehicleObj = updatedVehicle.toObject();
+        const responseData = {
+            ...vehicleObj,
+            imageUrl: '',
+            imageUrls: [],
+            allImageUrls: []
+        };
+
+        return successResponse(responseData, "Vehicle image references cleared successfully");
+    } catch (error) {
+        console.error("Error clearing vehicle images:", error);
+        return errorResponse("Failed to clear vehicle images", 500);
     }
 };
