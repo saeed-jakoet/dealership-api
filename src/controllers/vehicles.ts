@@ -1,4 +1,4 @@
-import {errorResponse, successResponse} from "../utils/response";
+﻿import { errorResponse, successResponse } from "../utils/response";
 import {
     addNewVehicle,
     deleteVehicleById,
@@ -8,8 +8,8 @@ import {
     updateVehicleById,
     updateVehicleImageOrder
 } from "../queries/vehicles";
-import {uploadImages} from "../helpers/uploader";
-
+import { uploadImages, deleteImagesFromCloudinary } from "../helpers/uploader";
+import { generateImageUrls } from "../utils/cloudinary";
 
 async function blobToBuffer(blob: Blob): Promise<Buffer> {
     const arrayBuffer = await blob.arrayBuffer();
@@ -19,13 +19,17 @@ async function blobToBuffer(blob: Blob): Promise<Buffer> {
 export const newVehicleController = async (c: any) => {
     try {
         const formData = await c.req.formData();
-        const folder = (formData.get("folder") as string) || "default-folder";
+        const folder = (formData.get("folder") as string) || "vehicles";
 
         const blobs = formData.getAll("file").filter((f: unknown) => typeof f !== "string") as Blob[];
 
-        const buffers = await Promise.all(blobs.map(blobToBuffer));
+        if (blobs.length === 0) {
+            return errorResponse("At least one image is required", 400);
+        }
 
-        const imageUrls = await uploadImages(buffers, folder);
+        const buffers = await Promise.all(blobs.map(blobToBuffer));
+        const { imagePublicIds } = await uploadImages(buffers, folder);
+        
         const data = Object.fromEntries(
             (Array.from(formData.entries()) as [string, any][]).filter(
                 ([key]) => key !== "file" && key !== "folder"
@@ -35,13 +39,21 @@ export const newVehicleController = async (c: any) => {
         if (typeof data.vehicleDetails === "string") data.vehicleDetails = JSON.parse(data.vehicleDetails);
         if (typeof data.extras === "string") data.extras = JSON.parse(data.extras || "[]");
 
-        data.imageUrl = imageUrls[0];
-        data.imageUrls = imageUrls.slice(1);
+        data.imagePublicIds = imagePublicIds;
 
         type VehicleInput = Parameters<typeof addNewVehicle>[0];
         const newVehicle = await addNewVehicle(data as VehicleInput);
 
-        return successResponse(newVehicle, "Vehicle added successfully");
+        const vehicleObj = newVehicle.toObject();
+        const imageUrls = generateImageUrls(vehicleObj.imagePublicIds || []);
+        const responseData = {
+            ...vehicleObj,
+            imageUrl: imageUrls[0] || '',
+            imageUrls: imageUrls.slice(1),
+            allImageUrls: imageUrls
+        };
+
+        return successResponse(responseData, "Vehicle added successfully");
     } catch (error) {
         console.error("Error adding vehicle:", error);
         return errorResponse("Failed to add vehicle", 500);
@@ -52,21 +64,42 @@ export const getAllVehiclesController = async () => {
     try {
         const vehicles = await fetchAllVehicles();
 
-        return successResponse(vehicles, "Vehicles fetched successfully");
+        const vehiclesWithImages = vehicles.map(vehicle => {
+            const vehicleObj = vehicle.toObject();
+            const imageUrls = generateImageUrls(vehicleObj.imagePublicIds || []);
+            
+            return {
+                ...vehicleObj,
+                imageUrl: imageUrls[0] || '',
+                imageUrls: imageUrls.slice(1),
+                allImageUrls: imageUrls
+            };
+        });
+        
+        return successResponse(vehiclesWithImages, "Vehicles fetched successfully");
     } catch (error) {
         console.error("Error fetching vehicles:", error);
         return errorResponse("Failed to fetch vehicles", 500);
     }
-}
+};
 
 export const getVehicleByIdController = async (c: any) => {
     try {
-        const {id} = c.req.param();
+        const { id } = c.req.param();
 
         const vehicle = await fetchVehicleById(id);
         if (!vehicle) return errorResponse("Vehicle not found", 404);
 
-        return successResponse(vehicle, "Vehicle fetched successfully");
+        const vehicleObj = vehicle.toObject();
+        const imageUrls = generateImageUrls(vehicleObj.imagePublicIds || []);
+        const responseData = {
+            ...vehicleObj,
+            imageUrl: imageUrls[0] || '',
+            imageUrls: imageUrls.slice(1),
+            allImageUrls: imageUrls
+        };
+
+        return successResponse(responseData, "Vehicle fetched successfully");
     } catch (error) {
         console.error("Error fetching vehicle by ID:", error);
         return errorResponse("Failed to fetch vehicle", 500);
@@ -75,14 +108,24 @@ export const getVehicleByIdController = async (c: any) => {
 
 export const updateVehicleDetails = async (c: any) => {
     try {
-        const {id} = c.req.param();
+        const { id } = c.req.param();
         const body = await c.req.json();
 
         if (typeof body.vehicleDetails === "string") body.vehicleDetails = JSON.parse(body.vehicleDetails);
         if (typeof body.extras === "string") body.extras = JSON.parse(body.extras || "[]");
 
         const updatedVehicle = await updateVehicleById(id, body);
-        return successResponse(updatedVehicle, "Vehicle updated successfully");
+        
+        const vehicleObj = updatedVehicle.toObject();
+        const imageUrls = generateImageUrls(vehicleObj.imagePublicIds || []);
+        const responseData = {
+            ...vehicleObj,
+            imageUrl: imageUrls[0] || '',
+            imageUrls: imageUrls.slice(1),
+            allImageUrls: imageUrls
+        };
+
+        return successResponse(responseData, "Vehicle updated successfully");
     } catch (error) {
         console.error("Error updating vehicle:", error);
         return errorResponse("Failed to update vehicle", 500);
@@ -91,47 +134,126 @@ export const updateVehicleDetails = async (c: any) => {
 
 export const deleteVehicle = async (c: any) => {
     try {
-        const {id} = c.req.param();
+        const { id } = c.req.param();
 
+        const vehicle = await fetchVehicleById(id);
+        if (!vehicle) return errorResponse("Vehicle not found", 404);
+
+        const publicIdsToDelete = vehicle.imagePublicIds || [];
         await deleteVehicleById(id);
 
-        return successResponse("Vehicle deleted successfully");
+        if (publicIdsToDelete.length > 0) {
+            try {
+                await deleteImagesFromCloudinary(publicIdsToDelete);
+            } catch (cloudinaryError) {
+                console.error("Warning: Failed to delete images from Cloudinary:", cloudinaryError);
+            }
+        }
+
+        return successResponse("Vehicle and associated images deleted successfully");
     } catch (error) {
         console.error("Error deleting vehicle", error);
         return errorResponse("Failed to delete vehicle", 500);
     }
-}
+};
 
 export const shuffleImages = async (c: any) => {
     try {
-        const {id} = c.req.param();
+        const { id } = c.req.param();
         const body = await c.req.json();
-        const {imageUrls} = body;
+        const { publicIds } = body;
 
-        if (!Array.isArray(imageUrls) || imageUrls.some((url) => typeof url !== "string")) {
-            return c.json({message: "Invalid or missing imageUrls"}, 400);
+        if (!Array.isArray(publicIds) || publicIds.some((id) => typeof id !== "string")) {
+            return errorResponse("Invalid or missing publicIds array", 400);
         }
 
-        const updatedVehicle = await updateVehicleImageOrder(id, imageUrls);
+        const updatedVehicle = await updateVehicleImageOrder(id, publicIds);
+        
+        const vehicleObj = updatedVehicle.toObject();
+        const imageUrls = generateImageUrls(vehicleObj.imagePublicIds || []);
+        const responseData = {
+            ...vehicleObj,
+            imageUrl: imageUrls[0] || '',
+            imageUrls: imageUrls.slice(1),
+            allImageUrls: imageUrls
+        };
 
-        return c.json(updatedVehicle, 200);
+        return successResponse(responseData, "Images reordered successfully");
     } catch (error) {
         console.error("Error in shuffleImages:", error);
-        return c.json({message: "Failed to reorder images"}, 500);
+        return errorResponse("Failed to reorder images", 500);
     }
 };
 
 export const vehicleVisibility = async (c: any) => {
     try {
-        const {id} = c.req.param()
+        const { id } = c.req.param();
         const body = await c.req.json();
 
         const updatedVisibility = await showVehicleInApp(id, body);
 
-        return successResponse(updatedVisibility, "Vehicle visibility successfully updated");
+        const vehicleObj = updatedVisibility.toObject();
+        const imageUrls = generateImageUrls(vehicleObj.imagePublicIds || []);
+        const responseData = {
+            ...vehicleObj,
+            imageUrl: imageUrls[0] || '',
+            imageUrls: imageUrls.slice(1),
+            allImageUrls: imageUrls
+        };
+
+        return successResponse(responseData, "Vehicle visibility successfully updated");
     } catch (error) {
         console.error("Error updating vehicle:", error);
         return errorResponse("Failed to update vehicle", 500);
     }
-}
+};
 
+export const updateVehicleImages = async (c: any) => {
+    try {
+        const { id } = c.req.param();
+        const formData = await c.req.formData();
+        const folder = (formData.get("folder") as string) || "vehicles";
+
+        const existingVehicle = await fetchVehicleById(id);
+        if (!existingVehicle) return errorResponse("Vehicle not found", 404);
+
+        const blobs = formData.getAll("file").filter((f: unknown) => typeof f !== "string") as Blob[];
+        
+        if (blobs.length === 0) {
+            return errorResponse("At least one image is required", 400);
+        }
+
+        const buffers = await Promise.all(blobs.map(blobToBuffer));
+        const { imagePublicIds } = await uploadImages(buffers, folder, id);
+
+        const oldPublicIds = existingVehicle.imagePublicIds || [];
+
+        const updateData = {
+            imagePublicIds: imagePublicIds
+        };
+
+        const updatedVehicle = await updateVehicleById(id, updateData);
+
+        if (oldPublicIds.length > 0) {
+            try {
+                await deleteImagesFromCloudinary(oldPublicIds);
+            } catch (cloudinaryError) {
+                console.error("Warning: Failed to delete old images from Cloudinary:", cloudinaryError);
+            }
+        }
+
+        const vehicleObj = updatedVehicle.toObject();
+        const imageUrls = generateImageUrls(vehicleObj.imagePublicIds || []);
+        const responseData = {
+            ...vehicleObj,
+            imageUrl: imageUrls[0] || '',
+            imageUrls: imageUrls.slice(1),
+            allImageUrls: imageUrls
+        };
+
+        return successResponse(responseData, "Vehicle images updated successfully");
+    } catch (error) {
+        console.error("Error updating vehicle images:", error);
+        return errorResponse("Failed to update vehicle images", 500);
+    }
+};

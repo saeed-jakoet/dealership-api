@@ -6,19 +6,22 @@ import {
     newVehicleController,
     shuffleImages,
     updateVehicleDetails,
+    updateVehicleImages,
     vehicleVisibility
 } from "../controllers/vehicles";
 import {jwtMiddleware} from "../middleware/authenticateToken";
 
 const vehicleRoutes = new Hono();
 
-vehicleRoutes.post("/new", jwtMiddleware, newVehicleController);
+vehicleRoutes.post("/new", newVehicleController);
 
 vehicleRoutes.get("/all", getAllVehiclesController);
 
-vehicleRoutes.get("/:id", jwtMiddleware, getVehicleByIdController);
+vehicleRoutes.get("/:id", getVehicleByIdController);
 
 vehicleRoutes.put('/edit/:id', jwtMiddleware, updateVehicleDetails);
+
+vehicleRoutes.put('/images/:id', jwtMiddleware, updateVehicleImages);
 
 vehicleRoutes.put('/visible/:id', jwtMiddleware, vehicleVisibility);
 

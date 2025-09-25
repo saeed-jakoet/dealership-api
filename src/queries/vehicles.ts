@@ -11,8 +11,7 @@ export const addNewVehicle = async (data: {
     fuelType: string;
     year: string;
     brand: string;
-    imageUrl: string;
-    imageUrls: string[];
+    imagePublicIds: string[];
     extras: string[];
     sellerComments: string;
     vehicleDetails: {
@@ -86,24 +85,23 @@ export const deleteVehicleById = async (id: string) => {
 export const updateVehicleById = async (
     id: string,
     data: {
-        name: string;
-        used: boolean;
-        mileage: string;
-        transmissionType: string;
-        price: string;
-        fuelType: string;
-        year: string;
-        brand: string;
-        imageUrl: string;
-        imageUrls: string[];
-        extras: string[];
-        sellerComments: string;
-        vehicleDetails: {
-            previousOwners: number;
-            serviceHistory: string;
-            colour: string;
-            bodyType: string;
-            warranty: string;
+        name?: string;
+        used?: boolean;
+        mileage?: string;
+        transmissionType?: string;
+        price?: string;
+        fuelType?: string;
+        year?: string;
+        brand?: string;
+        imagePublicIds?: string[];
+        extras?: string[];
+        sellerComments?: string;
+        vehicleDetails?: {
+            previousOwners?: number;
+            serviceHistory?: string;
+            colour?: string;
+            bodyType?: string;
+            warranty?: string;
         };
     }
 ) => {
@@ -147,7 +145,7 @@ export const showVehicleInApp = async (id: string, data: {
 
 export const updateVehicleImageOrder = async (
     id: string,
-    reorderedImageUrls: string[]
+    reorderedPublicIds: string[]
 ) => {
     try {
         await connectToDatabase();
@@ -155,8 +153,7 @@ export const updateVehicleImageOrder = async (
         const updatedVehicle = await Vehicle.findByIdAndUpdate(
             id,
             {
-                imageUrls: reorderedImageUrls,
-                imageUrl: reorderedImageUrls[0] || "",
+                imagePublicIds: reorderedPublicIds,
             },
             {new: true, runValidators: true}
         );
