@@ -2,7 +2,7 @@ import { rateLimiter } from "hono-rate-limiter";
 
 export const limiter = rateLimiter({
   windowMs: 15 * 60 * 1000,
-  limit: 1,
+  limit: 5,
   standardHeaders: "draft-7",
   keyGenerator: (c) =>
     c.req.header("x-forwarded-for") ||
