@@ -20,7 +20,6 @@ async function blobToBuffer(blob: Blob): Promise<Buffer> {
 export const newVehicleController = async (c: any) => {
   try {
     const formData = await c.req.formData();
-    const folder = (formData.get("folder") as string) || "vehicles";
 
     const blobs = formData
       .getAll("file")
@@ -29,9 +28,6 @@ export const newVehicleController = async (c: any) => {
     if (blobs.length === 0) {
       return errorResponse("At least one image is required", 400);
     }
-
-    const buffers = await Promise.all(blobs.map(blobToBuffer));
-    const { imagePublicIds } = await uploadImages(buffers, folder);
 
     const data = Object.fromEntries(
       (Array.from(formData.entries()) as [string, any][]).filter(
@@ -43,6 +39,11 @@ export const newVehicleController = async (c: any) => {
       data.vehicleDetails = JSON.parse(data.vehicleDetails);
     if (typeof data.extras === "string")
       data.extras = JSON.parse(data.extras || "[]");
+
+    const folder = data.name || "vehicles";
+
+    const buffers = await Promise.all(blobs.map(blobToBuffer));
+    const { imagePublicIds } = await uploadImages(buffers, folder);
 
     data.imagePublicIds = imagePublicIds;
 
