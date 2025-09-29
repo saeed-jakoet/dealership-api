@@ -21,14 +21,11 @@ async function blobToBuffer(blob: Blob): Promise<Buffer> {
 export const newVehicleController = async (c: any) => {
   try {
     const formData = await c.req.formData();
+    console.log(formData)
 
     const blobs = formData
       .getAll("file")
       .filter((f: unknown) => typeof f !== "string") as Blob[];
-
-    if (blobs.length === 0) {
-      return errorResponse("At least one image is required", 400);
-    }
 
     const data = Object.fromEntries(
       (Array.from(formData.entries()) as [string, any][]).filter(
@@ -41,10 +38,14 @@ export const newVehicleController = async (c: any) => {
     if (typeof data.extras === "string")
       data.extras = JSON.parse(data.extras || "[]");
 
-    const folder = data.name || "vehicles";
+    let imagePublicIds: string[] = [];
 
-    const buffers = await Promise.all(blobs.map(blobToBuffer));
-    const { imagePublicIds } = await uploadImages(buffers, folder);
+    if (blobs.length > 0) {
+      const folder = data.name || "vehicles";
+      const buffers = await Promise.all(blobs.map(blobToBuffer));
+      const uploadResult = await uploadImages(buffers, folder);
+      imagePublicIds = uploadResult.imagePublicIds;
+    }
 
     data.imagePublicIds = imagePublicIds;
 
