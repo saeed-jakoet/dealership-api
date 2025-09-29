@@ -54,10 +54,16 @@ export const fetchAllVehicles = async () => {
   }
 };
 
-export const fetchVisibleVehicles = async () => {
+export const fetchVisibleVehicles = async (
+  page: number = 1,
+  pageSize: number = 3
+) => {
   try {
     await connectToDatabase();
-    const vehicles = await Vehicle.find({ visible: { $ne: false } });
+    const vehicles = await Vehicle.find({ visible: { $ne: false } })
+      .sort({ brand: 1 }) // Sort by brand alphabetically (A-Z)
+      .skip((page - 1) * pageSize)
+      .limit(pageSize);
     return vehicles;
   } catch (error) {
     console.error("Error fetching vehicles:", error);

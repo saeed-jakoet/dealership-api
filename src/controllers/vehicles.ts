@@ -1,4 +1,5 @@
 ﻿import { errorResponse, successResponse } from "../utils/response";
+import { Vehicle } from "../schema/vehicles";
 import {
   addNewVehicle,
   deleteVehicleById,
@@ -89,9 +90,17 @@ export const getAllVehiclesController = async () => {
   }
 };
 
-export const getAllVisibleVehiclesController = async () => {
+export const getAllVisibleVehiclesController = async (c: any) => {
   try {
-    const vehicles = await fetchVisibleVehicles();
+    // Get page and pageSize from query params, default to 1 and 3
+    const page = parseInt(c.req.query("page") || "1", 10);
+    const pageSize = parseInt(c.req.query("pageSize") || "3", 10);
+
+    // Fetch paginated vehicles
+    const vehicles = await fetchVisibleVehicles(page, pageSize);
+
+    // Fetch total count of visible vehicles (no pagination)
+    const total = await Vehicle.countDocuments({ visible: { $ne: false } });
 
     const vehiclesWithImages = vehicles.map((vehicle) => {
       const vehicleObj = vehicle.toObject();
@@ -105,7 +114,13 @@ export const getAllVisibleVehiclesController = async () => {
       };
     });
 
-    return successResponse(vehiclesWithImages, "Vehicles fetched successfully");
+    // Return both vehicles and total count in expected format
+    return successResponse({
+      data: vehiclesWithImages,
+      total: total,
+      page: page,
+      pageSize: pageSize
+    }, "Vehicles fetched successfully");
   } catch (error) {
     console.error("Error fetching vehicles:", error);
     return errorResponse("Failed to fetch vehicles", 500);
