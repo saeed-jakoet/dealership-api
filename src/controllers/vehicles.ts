@@ -161,6 +161,28 @@ export const updateVehicleDetails = async (c: any) => {
     if (typeof body.extras === "string")
       body.extras = JSON.parse(body.extras || "[]");
 
+    // Handle image deletion if imagesToDelete is provided
+    if (body.imagesToDelete && Array.isArray(body.imagesToDelete) && body.imagesToDelete.length > 0) {
+      // Delete images from Cloudinary first - if this fails, the entire operation fails
+      await deleteImagesFromCloudinary(body.imagesToDelete);
+      
+      // Get current vehicle to access existing imagePublicIds
+      const currentVehicle = await fetchVehicleById(id);
+      if (!currentVehicle) {
+        return errorResponse("Vehicle not found", 404);
+      }
+      
+      // Remove deleted image IDs from the array
+      const updatedImagePublicIds = (currentVehicle.imagePublicIds || [])
+        .filter((publicId: string) => !body.imagesToDelete.includes(publicId));
+      
+      // Update the body with the filtered imagePublicIds
+      body.imagePublicIds = updatedImagePublicIds;
+      
+      // Remove imagesToDelete from body as it's not needed for database update
+      delete body.imagesToDelete;
+    }
+
     const updatedVehicle = await updateVehicleById(id, body);
 
     const vehicleObj = updatedVehicle.toObject();

@@ -112,6 +112,7 @@ export const updateVehicleById = async (
     imagePublicIds?: string[];
     extras?: string[];
     sellerComments?: string;
+    visible?: boolean;
     vehicleDetails?: {
       previousOwners?: number;
       serviceHistory?: string;
