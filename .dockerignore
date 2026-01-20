@@ -1,9 +1,4 @@
-# deps
 node_modules
 .env
-
-# IDE
 .idea
-
-# fly config (don't ignore, needed for deploy)
-# fly.toml
+.git
