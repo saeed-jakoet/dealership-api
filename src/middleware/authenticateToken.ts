@@ -28,6 +28,12 @@ export const jwtMiddleware = async (c: Context, next: () => Promise<void>) => {
             return c.json({message: 'Token expired'}, 401);
         }
 
+        // Store payload on context for downstream handlers
+        c.set('jwtPayload', payload);
+
+        // Continue to the route handler
+        await next();
+
     } catch (error) {
         console.log('JWT verification error:', error);
         return c.json({message: 'Unauthorized'}, 401);
