@@ -1,5 +1,5 @@
 import {Context} from 'hono';
-import {jwt} from 'hono/jwt';
+import {verify} from 'hono/jwt';
 
 const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'jwt-secret';
 
@@ -17,7 +17,11 @@ export const jwtMiddleware = async (c: Context, next: () => Promise<void>) => {
         console.log('Auth header present:', !!authHeader);
         if (!authHeader) return c.json({message: 'Missing or malformed token'}, 401);
 
-        const payload = await jwt({secret: ACCESS_TOKEN_SECRET})(c, next) as JwtPayload;
+        const token = authHeader.startsWith('Bearer ')
+            ? authHeader.substring(7)
+            : authHeader;
+
+        const payload = await verify(token, ACCESS_TOKEN_SECRET, 'HS256') as JwtPayload;
         if (!payload) return c.json({message: 'Invalid token'}, 401);
 
         if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {

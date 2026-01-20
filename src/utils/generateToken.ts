@@ -11,7 +11,8 @@ export const generateToken = async (id: string) => {
             type: 'access',
             exp: now + 604800, // 7 days
         },
-        ACCESS_TOKEN_SECRET
+        ACCESS_TOKEN_SECRET,
+        'HS256'
     )
 
 
