@@ -1,6 +1,6 @@
 import { sign } from 'hono/jwt'
 
-const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'super-access-token-secret'
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET || 'jwt-secret'
 
 export const generateToken = async (id: string) => {
     const now = Math.floor(Date.now() / 1000) // Current time in seconds
