@@ -1,15 +1,9 @@
-# flyctl launch added from .gitignore
 # deps
-**\node_modules
-**\.env
+node_modules
+.env
 
-# flyctl launch added from .idea\.gitignore
-# Default ignored files
-.idea\shelf
-.idea\workspace.xml
-# Editor-based HTTP Client requests
-.idea\httpRequests
-# Datasource local storage ignored files
-.idea\dataSources
-.idea\dataSources.local.xml
-fly.toml
+# IDE
+.idea
+
+# fly config (don't ignore, needed for deploy)
+# fly.toml
