@@ -162,6 +162,25 @@ export const showVehicleInApp = async (
   }
 };
 
+export const toggleVehicleSold = async (id: string, sold: boolean) => {
+  try {
+    await connectToDatabase();
+
+    const updatedVehicle = await Vehicle.findByIdAndUpdate(
+      id,
+      { sold },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedVehicle) throw new Error("Vehicle not found");
+
+    return updatedVehicle;
+  } catch (error) {
+    console.error("Error toggling vehicle sold status:", error);
+    throw error;
+  }
+};
+
 export const updateVehicleImageOrder = async (
   id: string,
   reorderedPublicIds: string[]

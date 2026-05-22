@@ -9,6 +9,7 @@ import {
   updateVehicleById,
   updateVehicleImageOrder,
   fetchVisibleVehicles,
+  toggleVehicleSold,
 } from "../queries/vehicles";
 import { uploadImages, deleteImagesFromCloudinary } from "../helpers/uploader";
 import { generateImageUrls } from "../utils/cloudinary";
@@ -285,6 +286,29 @@ export const vehicleVisibility = async (c: any) => {
   } catch (error) {
     console.error("Error updating vehicle:", error);
     return errorResponse("Failed to update vehicle", 500);
+  }
+};
+
+export const vehicleSoldController = async (c: any) => {
+  try {
+    const { id } = c.req.param();
+    const body = await c.req.json();
+
+    const updatedVehicle = await toggleVehicleSold(id, body.sold);
+
+    const vehicleObj = updatedVehicle.toObject();
+    const imageUrls = generateImageUrls(vehicleObj.imagePublicIds || []);
+    const responseData = {
+      ...vehicleObj,
+      imageUrl: imageUrls[0] || "",
+      imageUrls: imageUrls.slice(1),
+      allImageUrls: imageUrls,
+    };
+
+    return successResponse(responseData, "Vehicle marked as sold successfully");
+  } catch (error) {
+    console.error("Error marking vehicle as sold:", error);
+    return errorResponse("Failed to mark vehicle as sold", 500);
   }
 };
 

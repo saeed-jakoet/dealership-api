@@ -9,6 +9,7 @@ import {
   updateVehicleDetails,
   updateVehicleImages,
   vehicleVisibility,
+  vehicleSoldController,
   getAllVisibleVehiclesController,
 } from "../controllers/vehicles";
 import { jwtMiddleware } from "../middleware/authenticateToken";
@@ -30,6 +31,8 @@ vehicleRoutes.put("/images/:id", jwtMiddleware, updateVehicleImages);
 vehicleRoutes.delete("/images/:id", jwtMiddleware, clearVehicleImages);
 
 vehicleRoutes.put("/visible/:id", jwtMiddleware, vehicleVisibility);
+
+vehicleRoutes.put("/sold/:id", jwtMiddleware, vehicleSoldController);
 
 vehicleRoutes.put("/shuffle/:id", jwtMiddleware, shuffleImages);
 

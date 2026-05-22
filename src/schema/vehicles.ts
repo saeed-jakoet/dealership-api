@@ -4,6 +4,7 @@ const vehicleSchema = new mongoose.Schema({
     name: { type: String, required: true },
     used: { type: Boolean, default: false },
     visible: { type: Boolean, default: true },
+    sold: { type: Boolean, default: false },
     mileage: { type: String, required: true },
     transmissionType: { type: String, required: true },
     price: { type: String, required: true },
